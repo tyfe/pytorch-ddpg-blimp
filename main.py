@@ -1,5 +1,7 @@
 import argparse
 import os
+import sys
+import asyncio
 import gym
 from gym import wrappers
 from config import Config
@@ -8,6 +10,9 @@ from core.util import time_seq, load_obj
 from ddpg import DDPG
 from tester import Tester
 from trainer import Trainer
+
+from server import start
+
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--train', dest='train', action='store_true', help='train model')
@@ -26,7 +31,7 @@ parser.add_argument('--load_config', type=str, help='load the config from obj fi
 
 step_group = parser.add_argument_group('step')
 step_group.add_argument('--customize_step', dest='customize_step', action='store_true', help='customize max step per episode')
-step_group.add_argument('--max_steps', default=1000, type=int, help='max steps per episode')
+step_group.add_argument('--max_steps', default=10000, type=int, help='max steps per episode')
 
 record_group = parser.add_argument_group('record')
 record_group.add_argument('--record', dest='record', action='store_true', help='record the video')
@@ -65,26 +70,31 @@ config.tau = 0.001
 
 # env = gym.make() is limited by TimeLimit, there is a default max step.
 # If you want to control the max step every episode, do env = gym.make(config.env).env
-env = None
-if args.customize_step:
-    env = gym.make(config.env).env
-else:
-    env = gym.make(config.env)
+# env = None
+# if args.customize_step:
+#     env = gym.make(config.env).env
+# else:
+#     env = gym.make(config.env)
 
-env = NormalizedEnv(env)
-config.action_dim = int(env.action_space.shape[0])
-config.action_lim = float(env.action_space.high[0])
-config.state_dim = int(env.observation_space.shape[0])
+# env = NormalizedEnv(env)
+config.action_dim = int(2)
+config.action_lim = float(256)
+config.state_dim = int(6)
 
 if args.load_config is not None:
         config = load_obj(args.load_config)
 
 agent = DDPG(config)
 
+loop = asyncio.get_event_loop()
+start_server = start()
+loop.run_until_complete(start_server)
+
 if args.train:
-    trainer = Trainer(agent, env, config,
-                      record=args.record)
-    trainer.train()
+    trainer = Trainer(agent, config)
+    loop.run_until_complete(trainer.train())
+    loop.run_forever()
+    
 
 elif args.retrain:
     if args.retrain_model is None:
