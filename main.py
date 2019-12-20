@@ -102,9 +102,9 @@ elif args.retrain:
         exit(0)
 
     ep, step = agent.load_checkpoint(args.retrain_model)
-    trainer = Trainer(agent, env, config,
-                      record=args.record)
-    trainer.train(ep, step)
+    trainer = Trainer(agent, config)
+    loop.run_until_complete(trainer.train())
+    loop.run_forever()
 
 
 elif args.test:
@@ -113,10 +113,10 @@ elif args.test:
         exit(0)
 
     # record
-    if args.record:
-        os.makedirs('video', exist_ok=True)
-        filepath = 'video/' + args.env + '-' + time_seq()
-        env = wrappers.Monitor(env, filepath, video_callable=lambda episode_id: episode_id % 25 == 0)
+    # if args.record:
+    #     os.makedirs('video', exist_ok=True)
+    #     filepath = 'video/' + args.env + '-' + time_seq()
+    #     env = wrappers.Monitor(env, filepath, video_callable=lambda episode_id: episode_id % 25 == 0)
 
     tester = Tester(agent, env,
                     model_path=args.model_path)

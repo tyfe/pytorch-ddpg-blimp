@@ -162,7 +162,7 @@ def calculateStateAndReward(acceleration, angularVelocity, linearVelocity):
     # elif speed < 0.25:
     reward = 3.0 - (4 * speed) ** 2 - (10000 * accmag) ** 2 - (100 * angularVelocity) ** 2
 
-    return (state, reward, speed < 0.05 and abs(angularVelocity) < 0.0005)
+    return (state, reward, speed < 0.1 and abs(angularVelocity) < 0.0005)
 
 async def sendCommand(command):
     await producer_queue.put(command)
