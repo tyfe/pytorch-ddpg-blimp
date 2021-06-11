@@ -5,7 +5,7 @@ pydot-ng==2.0.0
 tqdm==4.30.0
 numpy==1.16.2
 pandas==0.23.4
-pillow==6.2.0
+pillow==8.2.0
 ortools==6.10.6025
 opencv-python==4.1.0.25
 gym==0.13.1
